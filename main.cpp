@@ -150,7 +150,7 @@ void display() {
         // Nomes dos alunos (canto superior direito)
         desenhaTexto(600, 580, "Alunos:");
         desenhaTexto(600, 560, "Thalles Inacio Araujo");
-        desenhaTexto(600, 540, "Thiago Ribeiro");
+        desenhaTexto(600, 540, "Thiago Roberto de Lima Ribeiro");
         
         // Ajuda de controles (canto inferior esquerdo)
         desenhaTexto(10, 580, "CONTROLES:");
