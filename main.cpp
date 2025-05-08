@@ -19,9 +19,17 @@ typedef struct {
     float cor[3];
 } Garra;
 
+// Enum para modos de câmera
+typedef enum {
+    CAMERA_PADRAO,
+    CAMERA_SUPERIOR,
+    CAMERA_FRONTAL
+} ModoCamera;
+
 // Controles
 int juntaAtiva = 1; // 1 = braço (vermelho), 2 = antebraço (verde)
 bool mostrarAjuda = true;
+ModoCamera modoCamera = CAMERA_PADRAO;
 
 // Valores iniciais para reiniciar
 const SegmentoRobo BASE_INICIAL = { 1.0f, 1.0f, 0.5f, 0, 0, 0, {0.3f, 0.3f, 0.3f} };
@@ -48,6 +56,7 @@ void reiniciarPosicoes() {
     posY = POS_INICIAL_Y;
     posZ = POS_INICIAL_Z;
     juntaAtiva = 1;
+    modoCamera = CAMERA_PADRAO;
 }
 
 void desenhaSegmento(SegmentoRobo s) {
@@ -88,7 +97,19 @@ void desenhaTexto(float x, float y, const char* texto) {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(0, 0, posZ, 0, 0, 0, 0, 1, 0);
+    
+    // Configuração da câmera baseada no modo selecionado
+    switch(modoCamera) {
+        case CAMERA_PADRAO:
+            gluLookAt(0, 0, posZ, 0, 0, 0, 0, 1, 0);
+            break;
+        case CAMERA_SUPERIOR:
+            gluLookAt(0, 10, 0, 0, 0, 0, 0, 0, -1);
+            break;
+        case CAMERA_FRONTAL:
+            gluLookAt(0, 0, 10, 0, 0, 0, 0, 1, 0);
+            break;
+    }
 
     // Desenha o braço robótico
     glPushMatrix();
@@ -165,9 +186,24 @@ void display() {
         desenhaTexto(10, 400, "R - Reiniciar posicoes");
         desenhaTexto(10, 380, "H - Mostrar/Esconder Ajuda");
         
+        // Controles de câmera
+        desenhaTexto(10, 360, "CAMERAS:");
+        desenhaTexto(10, 340, "3 - Padrao");
+        desenhaTexto(10, 320, "4 - Superior");
+        desenhaTexto(10, 300, "5 - Frontal");
+        
         char status[50];
         sprintf(status, "JUNTA ATIVA: %s", (juntaAtiva == 1) ? "VERMELHA" : "VERDE");
-        desenhaTexto(10, 360, status);
+        desenhaTexto(10, 280, status);
+        
+        const char* modoCameraStr;
+        switch(modoCamera) {
+            case CAMERA_PADRAO: modoCameraStr = "PADRAO"; break;
+            case CAMERA_SUPERIOR: modoCameraStr = "SUPERIOR"; break;
+            case CAMERA_FRONTAL: modoCameraStr = "FRONTAL"; break;
+        }
+        sprintf(status, "CAMERA ATUAL: %s", modoCameraStr);
+        desenhaTexto(10, 260, status);
         
         glPopMatrix();
         glMatrixMode(GL_PROJECTION);
@@ -200,6 +236,11 @@ void teclado(unsigned char key, int x, int y) {
         // Garra
         case 'z': garra.abertura += 5; if (garra.abertura > 60) garra.abertura = 60; break;
         case 'x': garra.abertura -= 5; if (garra.abertura < 0) garra.abertura = 0; break;
+            
+        // Câmeras
+        case '3': modoCamera = CAMERA_PADRAO; break;
+        case '4': modoCamera = CAMERA_SUPERIOR; break;
+        case '5': modoCamera = CAMERA_FRONTAL; break;
             
         // Ajuda
         case 'h': mostrarAjuda = !mostrarAjuda; break;
@@ -238,7 +279,9 @@ void reshape(int w, int h) {
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(800, 600);
+    int screenWidth = glutGet(GLUT_SCREEN_WIDTH);
+    int screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+    glutInitWindowSize(screenWidth, screenHeight);
     glutCreateWindow("Braco Robotico 3D - Controle de Juntas");
     
     glEnable(GL_DEPTH_TEST);
